@@ -77,6 +77,9 @@ spec:
         - mountPath: /etc/prometheus/prometheus.yml
           name: prometheus-config
           subPath: prometheus.yml
+        - mountPath: /etc/prometheus/prometheus-rules.yml
+          name: prometheus-config
+          subPath: prometheus-rules.yml
         - mountPath: /etc/prometheus/alert.rules.yml
           name: prometheus-config
           subPath: alert.rules.yml
@@ -92,6 +95,9 @@ spec:
                 mode: 0644
               - key: alert.rules.yml
                 path: alert.rules.yml
+                mode: 0644
+              - key: prometheus-rules.yml
+                path: prometheus-rules.yml
                 mode: 0644
         - name: prom-data
           emptyDir: {}

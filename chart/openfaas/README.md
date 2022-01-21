@@ -107,7 +107,7 @@ echo "OpenFaaS admin password: $PASSWORD"
 kubectl create secret generic \
     -n openfaas \
     openfaas-license \
-    --from-file license=$HOME/OPENFAAS_LICENSE
+    --from-file license=$HOME/.openfaas/LICENSE
 ```
 
 Now deploy OpenFaaS from the helm chart repo:
