@@ -106,16 +106,33 @@ data:
         - source_labels: [__name__]
           regex: container_(.+)
           action: drop
-        # Group pod metrics by function name
+        - action: replace
+          source_labels:
+          - namespace
+          regex: '(.*)'
+          replacement: '$1'
+          target_label: kubernetes_namespace
+        # - action: replace
+        #   source_labels:
+        #   - pod
+        #   regex: '(.*)'
+        #   replacement: '$1'
+        #   target_label: kubernetes_pod_name
+        # Output deployment name from Pod
         - action: replace
           source_labels:
           - pod
           regex: '^([0-9a-zA-Z-]+)+(-[0-9a-zA-Z]+-[0-9a-zA-Z]+)$'
           replacement: '$1'
           target_label: deployment_name
-        - source_labels: [deployment_name, namespace]
-          separator: "."
+        # Output fully-qualified function name fn.ns
+        - source_labels: [deployment_name, kubernetes_namespace]
+          separator: ";"
+          regex: '(.*);(.*)'
+          replacement: '${1}.${2}'
           target_label: "function_name"
+
+
 
     alerting:
       alertmanagers:

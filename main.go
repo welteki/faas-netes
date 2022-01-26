@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"log"
+	"net/http"
 	"time"
 
 	clientset "github.com/openfaas/faas-netes/pkg/client/clientset/versioned"
@@ -48,6 +49,10 @@ func main() {
 		operator,
 		verbose bool
 	)
+
+	if time.Now().After(time.Date(2022, time.February, 1, 0, 0, 0, 0, time.UTC)) {
+		log.Fatalf("This demo has expired. Please email contact@openfaas.com for more information.")
+	}
 
 	flag.StringVar(&kubeconfig, "kubeconfig", "",
 		"Path to a kubeconfig. Only required if out-of-cluster.")
@@ -215,12 +220,16 @@ func runController(setup serverSetup) {
 
 	functionLookup := k8s.NewFunctionLookup(config.DefaultFunctionNamespace, listers.EndpointsInformer.Lister())
 
+	query := handlers.NewPrometheusQuery(config.FaaSConfig.PrometheusHost,
+		config.FaaSConfig.PrometheusPort,
+		http.DefaultClient)
+
 	bootstrapHandlers := providertypes.FaaSHandlers{
 		FunctionProxy:        proxy.NewHandlerFunc(config.FaaSConfig, functionLookup),
 		DeleteHandler:        handlers.MakeDeleteHandler(config.DefaultFunctionNamespace, kubeClient),
 		DeployHandler:        handlers.MakeDeployHandler(config.DefaultFunctionNamespace, factory),
 		FunctionReader:       handlers.MakeFunctionReader(config.DefaultFunctionNamespace, listers.DeploymentInformer.Lister()),
-		ReplicaReader:        handlers.MakeReplicaReader(config.DefaultFunctionNamespace, listers.DeploymentInformer.Lister()),
+		ReplicaReader:        handlers.MakeReplicaReader(config.DefaultFunctionNamespace, listers.DeploymentInformer.Lister(), &query),
 		ReplicaUpdater:       handlers.MakeReplicaUpdater(config.DefaultFunctionNamespace, kubeClient),
 		UpdateHandler:        handlers.MakeUpdateHandler(config.DefaultFunctionNamespace, factory),
 		HealthHandler:        handlers.MakeHealthHandler(),
