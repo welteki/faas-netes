@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -22,7 +20,7 @@ import (
 )
 
 // MakeReplicaReader reads the amount of replicas for a deployment
-func MakeReplicaReader(defaultNamespace string, lister v1.DeploymentLister, query *PrometheusQuery) http.HandlerFunc {
+func MakeReplicaReader(defaultNamespace string, lister v1.DeploymentLister, query *k8s.PrometheusQuery) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		vars := mux.Vars(r)
@@ -53,7 +51,7 @@ func MakeReplicaReader(defaultNamespace string, lister v1.DeploymentLister, quer
 			w.WriteHeader(http.StatusNotFound)
 			return
 		} else if addUsage {
-			mixInUsage(function, query)
+			k8s.MixInUsage(function, query)
 		}
 
 		d := time.Since(s)
@@ -95,66 +93,4 @@ func getFunctionStatus(functionNamespace string, functionName string, lister v1.
 	}
 
 	return nil, fmt.Errorf("function: %s not found", functionName)
-}
-
-func mixInUsage(function *types.FunctionStatus, query *PrometheusQuery) {
-
-	cpu := queryCPU(function.Name, function.Namespace, query)
-	memory := queryMemory(function.Name, function.Namespace, query)
-
-	if cpu != nil || memory != nil {
-		function.Utilisation = types.FunctionUtilisation{}
-
-		if cpu != nil {
-			function.Utilisation.CPU = *cpu
-		}
-		if memory != nil {
-			function.Utilisation.TotalMemoryBytes = *memory
-		}
-
-	}
-}
-
-func queryCPU(name, namespace string, query *PrometheusQuery) *float64 {
-	var val *float64
-	// Convert from nano CPU to milli CPU
-	q := fmt.Sprintf(`sum( rate ( pod_cpu_usage_seconds_total {function_name="%s"}[1m] ) * 1000 ) by (function_name)`,
-		name+"."+namespace)
-
-	results, err := query.Fetch(url.QueryEscape(q))
-	if err != nil {
-		log.Printf("Error querying Prometheus for %s, error: %s\n", q, err.Error())
-		return nil
-	}
-
-	if len(results.Data.Result) > 0 && len(results.Data.Result[0].Value) > 0 {
-
-		v := results.Data.Result[0].Value[1].(string)
-		f, err := strconv.ParseFloat(v, 64)
-		if err == nil {
-			val = &f
-		}
-	}
-	return val
-}
-
-func queryMemory(name, namespace string, query *PrometheusQuery) *float64 {
-	var val *float64
-	q := fmt.Sprintf(`ceil(sum( pod_memory_working_set_bytes {function_name="%s"}) by (function_name)) `,
-		name+"."+namespace)
-
-	results, err := query.Fetch(url.QueryEscape(q))
-	if err != nil {
-		log.Printf("Error querying Prometheus for %s, error: %s\n", q, err.Error())
-		return nil
-	}
-
-	if len(results.Data.Result) > 0 && len(results.Data.Result[0].Value) > 0 {
-		v := results.Data.Result[0].Value[1].(string)
-		f, err := strconv.ParseFloat(v, 64)
-		if err == nil {
-			val = &f
-		}
-	}
-	return val
 }

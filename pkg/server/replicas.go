@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	ofv1 "github.com/openfaas/faas-netes/pkg/apis/openfaas/v1"
 	clientset "github.com/openfaas/faas-netes/pkg/client/clientset/versioned"
+	"github.com/openfaas/faas-netes/pkg/k8s"
 	"github.com/openfaas/faas-provider/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -15,13 +16,16 @@ import (
 	glog "k8s.io/klog"
 )
 
-func makeReplicaReader(defaultNamespace string, client clientset.Interface, lister v1.DeploymentLister) http.HandlerFunc {
+func makeReplicaReader(defaultNamespace string, client clientset.Interface, lister v1.DeploymentLister, query *k8s.PrometheusQuery) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		functionName := vars["name"]
 
 		q := r.URL.Query()
 		namespace := q.Get("namespace")
+
+		usage := q.Get("usage")
+		addUsage := usage == "true" || usage == "1"
 
 		lookupNamespace := defaultNamespace
 
@@ -37,6 +41,7 @@ func makeReplicaReader(defaultNamespace string, client clientset.Interface, list
 			w.Write([]byte(err.Error()))
 			return
 		}
+
 		desiredReplicas, availableReplicas, err := getReplicas(functionName, lookupNamespace, lister)
 		if err != nil {
 			glog.Warningf("Function replica reader error: %v", err)
@@ -45,6 +50,10 @@ func makeReplicaReader(defaultNamespace string, client clientset.Interface, list
 		result := toFunctionStatus(*k8sfunc)
 		result.AvailableReplicas = availableReplicas
 		result.Replicas = desiredReplicas
+
+		if addUsage {
+			k8s.MixInUsage(&result, query)
+		}
 
 		res, err := json.Marshal(result)
 		if err != nil {

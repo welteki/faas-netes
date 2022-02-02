@@ -38,7 +38,7 @@ faasIdler:
 
 # advanced scaling on concurrency and CPU
 proScaler:
-  image: alexellis/scaler:0.0.4-dirty-amd64
+  image: openfaas-pro-scaler:0.1.1-dirty
   replicas: 1
   enabled: true
   resources:
@@ -98,7 +98,7 @@ basicAuthPlugin:
       cpu: "20m"
 
 faasnetes:
-  image: ghcr.io/openfaas/faas-netes:0.14.1
+  image: docker.io/alexellis2/faas-netes:0.15-rc1
   readTimeout: "60s"
   writeTimeout: "60s"
   imagePullPolicy: "Always"    # Image pull policy for deployed functions
@@ -119,7 +119,7 @@ faasnetes:
 
 # replaces faas-netes with openfaas-operator
 operator:
-  image: ghcr.io/openfaas/faas-netes:0.14.1
+  image: docker.io/alexellis2/faas-netes:0.15-rc1
   create: false
   # set this to false when creating multiple releases in the same cluster
   # must be true for the first one only

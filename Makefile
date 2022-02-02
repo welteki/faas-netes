@@ -46,6 +46,10 @@ build-buildx-all:
 		--tag $(SERVER)/$(OWNER)/faas-netes:$(TAG) \
 		.
 
+.PHONY:
+install-qemu:
+	@docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
 .PHONY: publish-buildx-all
 publish-buildx-all:
 	@echo  $(SERVER)/$(OWNER)/faas-netes:$(TAG) && \

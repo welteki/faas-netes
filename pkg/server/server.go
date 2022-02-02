@@ -36,7 +36,8 @@ func New(client clientset.Interface,
 	endpointsInformer coreinformer.EndpointsInformer,
 	deploymentLister v1apps.DeploymentLister,
 	clusterRole bool,
-	cfg config.BootstrapConfig) *Server {
+	cfg config.BootstrapConfig,
+	query *k8s.PrometheusQuery) *Server {
 
 	functionNamespace := "openfaas-fn"
 	if namespace, exists := os.LookupEnv("function_namespace"); exists {
@@ -63,7 +64,7 @@ func New(client clientset.Interface,
 		DeleteHandler:        makeDeleteHandler(functionNamespace, client),
 		DeployHandler:        makeApplyHandler(functionNamespace, client),
 		FunctionReader:       makeListHandler(functionNamespace, client, deploymentLister),
-		ReplicaReader:        makeReplicaReader(functionNamespace, client, deploymentLister),
+		ReplicaReader:        makeReplicaReader(functionNamespace, client, deploymentLister, query),
 		ReplicaUpdater:       makeReplicaHandler(functionNamespace, kube),
 		UpdateHandler:        makeApplyHandler(functionNamespace, client),
 		HealthHandler:        makeHealthHandler(),

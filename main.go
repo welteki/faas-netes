@@ -8,6 +8,8 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	clientset "github.com/openfaas/faas-netes/pkg/client/clientset/versioned"
@@ -50,7 +52,7 @@ func main() {
 		verbose bool
 	)
 
-	if time.Now().After(time.Date(2022, time.February, 1, 0, 0, 0, 0, time.UTC)) {
+	if time.Now().After(time.Date(2022, time.February, 14, 0, 0, 0, 0, time.UTC)) {
 		log.Fatalf("This demo has expired. Please email contact@openfaas.com for more information.")
 	}
 
@@ -147,12 +149,27 @@ func main() {
 		faasClient:             faasClient,
 	}
 
+	prometheusHost := "prometheus"
+	prometheusPort := 9090
+
+	if v, ok := os.LookupEnv("prometheus_host"); ok && len(v) > 0 {
+		prometheusHost = v
+	}
+
+	if v, ok := os.LookupEnv("prometheus_port"); ok && len(v) > 0 {
+		prometheusPort, _ = strconv.Atoi(v)
+	}
+
+	query := k8s.NewPrometheusQuery(prometheusHost,
+		prometheusPort,
+		http.DefaultClient)
+
 	if operator {
 		log.Println("Starting operator")
-		runOperator(setup, config)
+		runOperator(setup, config, query)
 	} else {
 		log.Println("Starting controller")
-		runController(setup)
+		runController(setup, query)
 	}
 }
 
@@ -208,7 +225,7 @@ func startInformers(setup serverSetup, stopCh <-chan struct{}, operator bool) cu
 }
 
 // runController runs the faas-netes imperative controller
-func runController(setup serverSetup) {
+func runController(setup serverSetup, query *k8s.PrometheusQuery) {
 	config := setup.config
 	kubeClient := setup.kubeClient
 	factory := setup.functionFactory
@@ -220,16 +237,12 @@ func runController(setup serverSetup) {
 
 	functionLookup := k8s.NewFunctionLookup(config.DefaultFunctionNamespace, listers.EndpointsInformer.Lister())
 
-	query := handlers.NewPrometheusQuery(config.FaaSConfig.PrometheusHost,
-		config.FaaSConfig.PrometheusPort,
-		http.DefaultClient)
-
 	bootstrapHandlers := providertypes.FaaSHandlers{
 		FunctionProxy:        proxy.NewHandlerFunc(config.FaaSConfig, functionLookup),
 		DeleteHandler:        handlers.MakeDeleteHandler(config.DefaultFunctionNamespace, kubeClient),
 		DeployHandler:        handlers.MakeDeployHandler(config.DefaultFunctionNamespace, factory),
 		FunctionReader:       handlers.MakeFunctionReader(config.DefaultFunctionNamespace, listers.DeploymentInformer.Lister()),
-		ReplicaReader:        handlers.MakeReplicaReader(config.DefaultFunctionNamespace, listers.DeploymentInformer.Lister(), &query),
+		ReplicaReader:        handlers.MakeReplicaReader(config.DefaultFunctionNamespace, listers.DeploymentInformer.Lister(), query),
 		ReplicaUpdater:       handlers.MakeReplicaUpdater(config.DefaultFunctionNamespace, kubeClient),
 		UpdateHandler:        handlers.MakeUpdateHandler(config.DefaultFunctionNamespace, factory),
 		HealthHandler:        handlers.MakeHealthHandler(),
@@ -243,7 +256,7 @@ func runController(setup serverSetup) {
 }
 
 // runOperator runs the CRD Operator
-func runOperator(setup serverSetup, cfg config.BootstrapConfig) {
+func runOperator(setup serverSetup, cfg config.BootstrapConfig, query *k8s.PrometheusQuery) {
 	kubeClient := setup.kubeClient
 	faasClient := setup.faasClient
 	kubeInformerFactory := setup.kubeInformerFactory
@@ -270,7 +283,7 @@ func runOperator(setup serverSetup, cfg config.BootstrapConfig) {
 		factory,
 	)
 
-	srv := server.New(faasClient, kubeClient, listers.EndpointsInformer, listers.DeploymentInformer.Lister(), cfg.ClusterRole, cfg)
+	srv := server.New(faasClient, kubeClient, listers.EndpointsInformer, listers.DeploymentInformer.Lister(), cfg.ClusterRole, cfg, query)
 
 	go srv.Start()
 	if err := ctrl.Run(1, stopCh); err != nil {

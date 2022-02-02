@@ -15,20 +15,29 @@ metadata:
 data:
   prometheus-rules.yml: |
     groups:
-    - name: scaling
+    - name: load
       rules:
       - record: job:function_current_load:sum
-        expr: sum by (function_name) ( rate( gateway_function_invocation_total{}[30s] ) )  and sum by (function_name) (gateway_service_target_load{scaling_type="rps"}) > 1
+        expr: sum by (function_name) ( rate( gateway_function_invocation_total{}[30s] ) )  and avg by (function_name) (gateway_service_target_load{scaling_type="rps"}) > 1
         labels:
           scaling_type: rps
+
       - record: job:function_current_load:sum
-        expr: sum by (function_name) (gateway_function_invocation_started{}) - sum by (function_name) ( gateway_function_invocation_total{}) and sum by (function_name) (gateway_service_target_load{scaling_type="capacity"}) > 1
+        expr: sum by (function_name) (gateway_function_invocation_started{}) - sum by (function_name) ( gateway_function_invocation_total{}) and avg by (function_name) (gateway_service_target_load{scaling_type="capacity"}) > 1
         labels:
           scaling_type: capacity
+
       - record: job:function_current_load:sum
-        expr: sum(irate ( pod_cpu_usage_seconds_total{}[1m])*1000) by (function_name) * on (function_name) sum by (function_name) (gateway_service_target_load{scaling_type="cpu"}  > bool 1 )
+        expr: sum(irate ( pod_cpu_usage_seconds_total{}[1m])*1000) by (function_name) * on (function_name) avg by (function_name) (gateway_service_target_load{scaling_type="cpu"}  > bool 1 )
         labels:
           scaling_type: cpu
+
+    - name: recently_started_1m
+      interval: 10s
+      rules:
+      - record: job:function_current_started:max_sum
+        expr: max_over_time(sum by (function_name) (rate( gateway_function_invocation_started{}[1m]))[1m:5s]) > 0
+
   prometheus.yml: |
     global:
       scrape_interval:     15s

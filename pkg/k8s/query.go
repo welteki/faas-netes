@@ -1,4 +1,4 @@
-package handlers
+package k8s
 
 import (
 	"encoding/json"
@@ -19,8 +19,8 @@ type PrometheusQueryFetcher interface {
 }
 
 // NewPrometheusQuery create a NewPrometheusQuery
-func NewPrometheusQuery(host string, port int, client *http.Client) PrometheusQuery {
-	return PrometheusQuery{
+func NewPrometheusQuery(host string, port int, client *http.Client) *PrometheusQuery {
+	return &PrometheusQuery{
 		Client: client,
 		Host:   host,
 		Port:   port,
@@ -50,14 +50,14 @@ func (q PrometheusQuery) Fetch(query string) (*VectorQueryResponse, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Unexpected status code from Prometheus want: %d, got: %d, body: %s", http.StatusOK, res.StatusCode, string(bytesOut))
+		return nil, fmt.Errorf("unexpected status code from Prometheus want: %d, got: %d, body: %s", http.StatusOK, res.StatusCode, string(bytesOut))
 	}
 
 	var values VectorQueryResponse
 
 	unmarshalErr := json.Unmarshal(bytesOut, &values)
 	if unmarshalErr != nil {
-		return nil, fmt.Errorf("Error unmarshaling result: %s, '%s'", unmarshalErr, string(bytesOut))
+		return nil, fmt.Errorf("error unmarshaling result: %s, '%s'", unmarshalErr, string(bytesOut))
 	}
 
 	return &values, nil
