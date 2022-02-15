@@ -29,7 +29,7 @@ RUN VERSION=$(git describe --all --exact-match `git rev-parse HEAD` | grep tags 
         -a -installsuffix cgo -o faas-netes .
 
 FROM --platform=${TARGETPLATFORM:-linux/amd64} alpine:3.14 as ship
-LABEL org.label-schema.license="MIT" \
+LABEL org.label-schema.license="OF-EULA" \
       org.label-schema.vcs-url="https://github.com/openfaas/faas-netes" \
       org.label-schema.vcs-type="Git" \
       org.label-schema.name="openfaas/faas-netes" \

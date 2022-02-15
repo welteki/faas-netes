@@ -52,7 +52,7 @@ func main() {
 		verbose bool
 	)
 
-	if time.Now().After(time.Date(2022, time.February, 14, 0, 0, 0, 0, time.UTC)) {
+	if time.Now().After(time.Date(2022, time.March, 14, 0, 0, 0, 0, time.UTC)) {
 		log.Fatalf("This demo has expired. Please email contact@openfaas.com for more information.")
 	}
 
