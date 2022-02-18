@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	cloud.google.com/go v0.81.0 // indirect
+	github.com/alexellis/jwt-license v0.5.0
 	github.com/google/go-cmp v0.5.6
 	github.com/gorilla/mux v1.8.0
 	github.com/imdario/mergo v0.3.7 // indirect

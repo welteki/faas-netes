@@ -1,6 +1,9 @@
 # cloud.google.com/go v0.81.0
 ## explicit
 cloud.google.com/go/compute/metadata
+# github.com/alexellis/jwt-license v0.5.0
+## explicit
+github.com/alexellis/jwt-license/pkg/v1
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.1.1
@@ -14,6 +17,8 @@ github.com/go-logr/logr
 # github.com/gogo/protobuf v1.3.2
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
+# github.com/golang-jwt/jwt/v4 v4.1.0
+github.com/golang-jwt/jwt/v4
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.5.2

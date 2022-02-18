@@ -6,11 +6,16 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
+
+	licensev1 "github.com/alexellis/jwt-license/pkg/v1"
 
 	clientset "github.com/openfaas/faas-netes/pkg/client/clientset/versioned"
 	informers "github.com/openfaas/faas-netes/pkg/client/informers/externalversions"
@@ -44,9 +49,30 @@ import (
 	// _ "sigs.k8s.io/controller-tools/cmd/controller-gen"
 )
 
+const (
+	sku = "openfaas-pro"
+)
+
+var (
+	PublicKey string
+)
+
+func hasProduct(sku string, list []string) bool {
+	for _, p := range list {
+		if p == sku {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
-	var kubeconfig string
-	var masterURL string
+	var (
+		kubeconfig,
+		masterURL,
+		license,
+		licenseFile string
+	)
 	var (
 		operator,
 		verbose bool
@@ -58,15 +84,56 @@ func main() {
 
 	flag.StringVar(&kubeconfig, "kubeconfig", "",
 		"Path to a kubeconfig. Only required if out-of-cluster.")
+
 	flag.BoolVar(&verbose, "verbose", false, "Print verbose config information")
 	flag.StringVar(&masterURL, "master", "",
 		"The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 
 	flag.BoolVar(&operator, "operator", false, "Use the operator mode instead of faas-netes")
+	flag.StringVar(&license, "license", "", "Literal value for the license")
+	flag.StringVar(&licenseFile, "license-file", "", "Path to the file for the license")
+
 	flag.Parse()
+
+	log.Printf("Public key: %s", PublicKey)
+	if len(license) == 0 && len(licenseFile) == 0 {
+		log.Fatalf("A license is required via --license or --license-file")
+	}
 
 	sha, release := version.GetReleaseInfo()
 	log.Printf("Version: %s\tcommit: %s\n", release, sha)
+
+	if len(licenseFile) > 0 {
+		res, err := ioutil.ReadFile(licenseFile)
+		if err != nil {
+			panic(err)
+		}
+		license = strings.TrimSpace(string(res))
+	}
+
+	if len(license) == 0 {
+		panic("provide an argument of -license or -license-file to continue using this product")
+	}
+
+	// if len(PublicKey) > 0 {
+	licenseToken, err := licensev1.LoadLicenseToken(license, PublicKey)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		fmt.Fprintf(os.Stderr, "PublicKey: %s\n", PublicKey)
+
+		os.Exit(1)
+	}
+
+	validForProduct := hasProduct(sku, licenseToken.Products)
+	if !validForProduct {
+		panic(fmt.Errorf("this license is not valid for %q, contact support@openfaas.com", sku).Error())
+	}
+
+	log.Printf("Licensed to: %s <%s>, expires: %.0f day(s)\n",
+		licenseToken.Name,
+		licenseToken.Email,
+		time.Until(licenseToken.Expires).Hours()/24)
+	// }
 
 	clientCmdConfig, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfig)
 	if err != nil {
