@@ -103,7 +103,7 @@ oidcAuthPlugin:
   securityContext: true
 
 gatewayPro:
-  image: ghcr.io/openfaasltd/gateway:0.1.1
+  image: welteki2/gateway:0.1.1-1-gd7e267b5@sha256:8f04e2427aa4cb7fdbd058c411ee60f3e02a6cd58962fbd8bfe833a04842e12a
 
 gateway:
   image: ghcr.io/openfaas/gateway:0.23.2
