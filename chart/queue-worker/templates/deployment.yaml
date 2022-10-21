@@ -61,6 +61,8 @@ spec:
               value: "{{ .Values.upstreamTimeout }}"
             - name: "tls_insecure"
               value: "{{ .Values.insecureTLS }}"
+            - name: "bind_function"
+              value: "{{ .Values.bindFunction }}"
 
             - name: "max_retry_attempts"
               value: "{{ .Values.maxRetryAttempts }}"

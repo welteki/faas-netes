@@ -1,4 +1,4 @@
-image: ghcr.io/openfaasltd/jetstream-queue-worker:0.2.0
+image: welteki2/jetstream-queue-worker:0.2.4-1-gdf1f1bf-amd64
 
 replicas: 1
 
@@ -16,6 +16,8 @@ initialRetryWait: "10s"
 # 503 Service Unavailable
 # 504 Gateway Timeout
 httpRetryCodes: "408,429,500,502,503,504"
+
+bindFunction: ""
 
 insecureTLS: false
 
