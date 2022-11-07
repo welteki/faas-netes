@@ -105,10 +105,10 @@ oidcAuthPlugin:
   securityContext: true
 
 gatewayPro:
-  image: ghcr.io/openfaasltd/gateway:0.2.5
+  image: ghcr.io/openfaasltd/gateway:0.2.7
 
 gateway:
-  image: ghcr.io/openfaas/gateway:0.25.2
+  image: ghcr.io/openfaas/gateway:0.25.3
   readTimeout: "65s"
   writeTimeout: "65s"
   upstreamTimeout: "60s"  # Must be smaller than read/write_timeout
