@@ -16,6 +16,7 @@ spec:
     matchLabels:
         app: {{ template "queue-worker.name" . }}
         component: queue-worker
+        faas_function: {{ template "queue-worker.fullname" . }}
   template:
     metadata:
       annotations:
