@@ -47,7 +47,7 @@ functions:
     failureThreshold: 3
 
 gatewayPro:
-  image: ghcr.io/openfaasltd/gateway:0.4.8
+  image: ttl.sh/welteki/gateway:0.4.8-4-g0e7995c1
   pprof: false
 
 gateway:

@@ -60,6 +60,9 @@ spec:
         secret:
           secretName: openfaas-license
       {{- end }}
+      - name: postgresql-connection
+        secret:
+          secretName: "postgresql-connection"
       terminationGracePeriodSeconds: 1
       containers:
       - name: gateway
@@ -73,6 +76,7 @@ spec:
         imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
         command:
           - ./gateway
+          - "-metering-connection-file=/var/secrets/postgresql-connection/postgresql-connection"
         {{- if .Values.openfaasPro }}
           - "-license-file=/var/secrets/license/license"
         {{- end }}
@@ -211,6 +215,9 @@ spec:
           readOnly: true
           mountPath: "/var/secrets/license"
         {{- end }}
+        - name: postgresql-connection
+          readOnly: true
+          mountPath: "/var/secrets/postgresql-connection"
         ports:
         - name: http
           containerPort: 8080
