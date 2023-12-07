@@ -198,6 +198,8 @@ spec:
           value: "{{ .Values.gateway.maxIdleConnsPerHost }}"
         - name: probe_functions
           value: "{{ .Values.gateway.probeFunctions }}"
+        - name: async
+          value: "{{ .Values.async }}"
         volumeMounts:
         # - name: faas-auth
         #   mountPath: /var/run/secrets/faas-auth
