@@ -120,7 +120,7 @@ helm upgrade --install \
 | `nats.stream.name` | Name of the NATS JetStream stream to use | `faas-request` |
 | `nats.stream.replicas` | Number of JetStream stream replicas to create | `1` |
 | `nats.consumer.durableName` | The name of the NATS JetStream consumer to use | `faas-workers` |
-| `nats.consumer.ackWait` | AckWait configures how long the NATS waits for an acknowledgement before redelivering the message| `30s` |
+| `nats.consumer.ackWait` | Do not change from 30s. Only `gateway.upstreamTimeout` sets the maximum function duration. See [Async reference](https://docs.openfaas.com/reference/async/) | `30s` |
 | `logs.debug` | Print debug logs | `false` |
 | `logs.format` | The log encoding format. Supported values: `json` or `console` | `console` |
 | `resources.requests.memory` | Memory resource request | `120Mi` |

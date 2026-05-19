@@ -50,6 +50,8 @@ nats:
     replicas: 1
   consumer:
     durableName: "custom-workers"
+    # Do not change ackWait from 30s. Only gateway.upstreamTimeout sets the
+    # maximum function duration.
     ackWait: "30s"
 
 logs:

@@ -279,6 +279,8 @@ queueWorker:
   # Control HA of queue-worker
   replicas: 1
   queueGroup: "faas"
+  # Do not change ackWait from 60s. Only gateway.upstreamTimeout sets the
+  # maximum function duration.
   ackWait: "60s"
   resources:
     requests:
