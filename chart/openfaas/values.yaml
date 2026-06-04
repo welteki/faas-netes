@@ -399,7 +399,7 @@ iam:
 ## if you wish to retain the metrics for a longer period, you should
 ## scrape this instance from an external Prometheus server
 prometheus:
-  image: prom/prometheus:v3.11.3
+  image: prom/prometheus:v3.12.0
   create: true
   retention:
     time: 15d
@@ -447,7 +447,7 @@ nats:
     host: ""
     port: ""
   # The version of NATS Core used with OpenFaaS Pro and JetStream
-  image: nats:2.14.1
+  image: nats:2.14.2
   resources:
     requests:
       memory: "120Mi"
