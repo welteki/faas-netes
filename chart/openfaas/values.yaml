@@ -271,6 +271,7 @@ queueWorkerPro:
   printResponseBody: false
   # Control the concurrent invocations
   maxInflight: 50
+  allowedCallbackURLs: ["*"]
 
 # Community Edition, maxInflight is 1
 # Name of shared queue is "faas-request"

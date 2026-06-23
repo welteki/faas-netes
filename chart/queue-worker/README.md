@@ -115,6 +115,7 @@ helm upgrade --install \
 | `gateway.host` | The host at which the OpenFaaS gateway can be reached | `http://gateway.openfaas` |
 | `gateway.port` | The port at which the OpenFaaS gateway can be reached | `8080` |
 | `insecureTLS` | Enable insecure tls for callbacks | `false` |
+| `allowedCallbackURLs` | List of glob patterns for URLs allowed to receive async callbacks. Defaults to `["*"]` (allow all). Set to empty list `[]` to deny all | `["*"]` |
 | `nats.host` | The host at which the NATS JetStream server can be reached | `nats.openfaas` |
 | `nats.port` | The port at which the NATS JetStream server can be reached | `4222` |
 | `nats.stream.name` | Name of the NATS JetStream stream to use | `faas-request` |

@@ -6,6 +6,8 @@
 
 image: ghcr.io/openfaasltd/jetstream-queue-worker:0.5.8
 
+allowedCallbackURLs: ["*"]
+
 replicas: 1
 
 # Change this to your queue name.

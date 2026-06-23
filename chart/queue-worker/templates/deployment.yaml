@@ -96,6 +96,8 @@ spec:
               value: "{{ .Values.httpRetryCodes }}"
             - name: "backoff"
               value: "{{ .Values.backoff }}"
+            - name: "allowed_callback_urls"
+              value: "{{ join "," .Values.allowedCallbackURLs }}"
         volumeMounts:
         - name: license
           readOnly: true
